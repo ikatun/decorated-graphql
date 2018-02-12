@@ -10,12 +10,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "graphql": "^0.13.0",
+    "graphql": "*",
     "graphql-tools": "^2.20.2",
     "lodash": "^4.17.5",
     "merge-graphql-schemas": "^1.4.0"
   },
   "devDependencies": {
-    "nnode": "0.0.5"
+    "nnode": "0.0.6"
+  },
+  "peerDependencies": {
+    "glob": "*"
   }
 }

@@ -196,7 +196,7 @@ export const toExcecutableMergedSchema = classesObjects =>
     resolvers: getMergedResolvers(classesObjects),
   });
 
-export default function introspect(schemaContents: string) {
+export function generateSchemaJson(schemaContents: string) {
   const schema = buildASTSchema(parse(schemaContents), { commentDescriptions: true });
   return graphql(schema, introspectionQuery);
 }

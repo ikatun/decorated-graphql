@@ -9,7 +9,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-exports.default = introspect;
+exports.generateSchemaJson = generateSchemaJson;
 
 var _lodash = require('lodash');
 
@@ -262,7 +262,7 @@ var toExcecutableMergedSchema = exports.toExcecutableMergedSchema = function toE
   });
 };
 
-function introspect(schemaContents) {
+function generateSchemaJson(schemaContents) {
   var schema = (0, _graphql.buildASTSchema)((0, _graphql.parse)(schemaContents), { commentDescriptions: true });
   return (0, _graphql.graphql)(schema, _utilities.introspectionQuery);
 }
