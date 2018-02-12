@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import { makeExecutableSchema } from 'graphql-tools';
 import { mergeTypes, mergeResolvers } from 'merge-graphql-schemas';
+import { buildASTSchema, graphql, parse } from 'graphql';
+import { introspectionQuery } from 'graphql/utilities';
 
 export const mutation = templateStrings => ({ constructor: decoratedClass }, methodName) => {
   const existingMutations = _.get(decoratedClass, 'graphql.mutations', []);
@@ -193,3 +195,8 @@ export const toExcecutableMergedSchema = classesObjects =>
     typeDefs: toMergedSchemasString(classesObjects),
     resolvers: getMergedResolvers(classesObjects),
   });
+
+export default function introspect(schemaContents: string) {
+  const schema = buildASTSchema(parse(schemaContents), { commentDescriptions: true });
+  return graphql(schema, introspectionQuery);
+}

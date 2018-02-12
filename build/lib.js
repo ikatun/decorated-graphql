@@ -9,6 +9,8 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+exports.default = introspect;
+
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
@@ -16,6 +18,10 @@ var _lodash2 = _interopRequireDefault(_lodash);
 var _graphqlTools = require('graphql-tools');
 
 var _mergeGraphqlSchemas = require('merge-graphql-schemas');
+
+var _graphql = require('graphql');
+
+var _utilities = require('graphql/utilities');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -255,3 +261,8 @@ var toExcecutableMergedSchema = exports.toExcecutableMergedSchema = function toE
     resolvers: getMergedResolvers(classesObjects)
   });
 };
+
+function introspect(schemaContents) {
+  var schema = (0, _graphql.buildASTSchema)((0, _graphql.parse)(schemaContents), { commentDescriptions: true });
+  return (0, _graphql.graphql)(schema, _utilities.introspectionQuery);
+}
