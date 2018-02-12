@@ -2,16 +2,20 @@
   "name": "decorated-graphql",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./build",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "nnode --transpile"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "graphql": "^0.13.0",
     "graphql-tools": "^2.20.2",
-    "merge-graphql-schemas": "^1.4.0",
-    "nnode": "0.0.4"
+    "lodash": "^4.17.5",
+    "merge-graphql-schemas": "^1.4.0"
+  },
+  "devDependencies": {
+    "nnode": "0.0.5"
   }
 }
