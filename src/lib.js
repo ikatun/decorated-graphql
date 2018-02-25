@@ -258,3 +258,11 @@ export function generateSchemaJson(schemaContents: string) {
   const schema = buildASTSchema(parse(schemaContents), { commentDescriptions: true });
   return graphql(schema, introspectionQuery);
 }
+
+import createSchema from './create-schema';
+import createSubscriptionServer from './create-subscription-server';
+
+export {
+  createSchema,
+  createSubscriptionServer,
+};

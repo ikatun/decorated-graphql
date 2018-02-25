@@ -4,10 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _stringify = require('babel-runtime/core-js/json/stringify');
-
-var _stringify2 = _interopRequireDefault(_stringify);
-
 var _fs = require('fs');
 
 var _fs2 = _interopRequireDefault(_fs);
@@ -50,7 +46,7 @@ exports.default = function (srcDir) {
   _fs2.default.writeFileSync(_path2.default.join(schemaDestPath, 'graphql.graphql'), mergedSchema, 'utf8');
 
   (0, _lib.generateSchemaJson)(mergedSchema).then(function (json) {
-    _fs2.default.writeFileSync(_path2.default.join(schemaDestPath, 'graphql.schema.json'), (0, _stringify2.default)(json, null, 2), 'utf8');
+    _fs2.default.writeFileSync(_path2.default.join(schemaDestPath, 'graphql.schema.json'), JSON.stringify(json, null, 2), 'utf8');
   });
 
   return executableMergedSchema;

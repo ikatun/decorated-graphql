@@ -3,31 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.toExcecutableMergedSchema = exports.getMergedResolvers = exports.toMergedSchemasString = exports.Enum = exports.input = exports.type = exports.subscription = exports.query = exports.mutation = exports.publish = undefined;
+exports.createSubscriptionServer = exports.createSchema = exports.toExcecutableMergedSchema = exports.getMergedResolvers = exports.toMergedSchemasString = exports.Enum = exports.input = exports.type = exports.subscription = exports.query = exports.mutation = exports.publish = undefined;
 
-var _assign = require('babel-runtime/core-js/object/assign');
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-var _assign2 = _interopRequireDefault(_assign);
-
-var _slicedToArray2 = require('babel-runtime/helpers/slicedToArray');
-
-var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
-
-var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
-
-var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
-
-var _getOwnPropertyNames = require('babel-runtime/core-js/object/get-own-property-names');
-
-var _getOwnPropertyNames2 = _interopRequireDefault(_getOwnPropertyNames);
-
-var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
-
-var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
-
-var _extends2 = require('babel-runtime/helpers/extends');
-
-var _extends3 = _interopRequireDefault(_extends2);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 exports.generateSchemaJson = generateSchemaJson;
 
@@ -45,7 +25,17 @@ var _utilities = require('graphql/utilities');
 
 var _graphqlSubscriptions = require('graphql-subscriptions');
 
+var _createSchema = require('./create-schema');
+
+var _createSchema2 = _interopRequireDefault(_createSchema);
+
+var _createSubscriptionServer = require('./create-subscription-server');
+
+var _createSubscriptionServer2 = _interopRequireDefault(_createSubscriptionServer);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var pubsub = new _graphqlSubscriptions.PubSub();
 var publish = exports.publish = function publish(subscriptionName, msg) {
@@ -58,8 +48,8 @@ var mutation = exports.mutation = function mutation(templateStrings) {
 
     var existingMutations = _lodash2.default.get(decoratedClass, 'graphql.mutations', []);
 
-    decoratedClass.graphql = (0, _extends3.default)({}, decoratedClass.graphql, {
-      mutations: [].concat((0, _toConsumableArray3.default)(existingMutations), [{
+    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
+      mutations: [].concat(_toConsumableArray(existingMutations), [{
         name: methodName,
         args: templateStrings.join('')
       }])
@@ -73,8 +63,8 @@ var query = exports.query = function query(templateStrings) {
 
     var existingQueries = _lodash2.default.get(decoratedClass, 'graphql.queries', []);
 
-    decoratedClass.graphql = (0, _extends3.default)({}, decoratedClass.graphql, {
-      queries: [].concat((0, _toConsumableArray3.default)(existingQueries), [{
+    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
+      queries: [].concat(_toConsumableArray(existingQueries), [{
         name: methodName,
         args: templateStrings.join('')
       }])
@@ -88,8 +78,8 @@ var subscription = exports.subscription = function subscription(templateStrings)
 
     var existingSubscriptions = _lodash2.default.get(decoratedClass, 'graphql.subscriptions', []);
 
-    decoratedClass.graphql = (0, _extends3.default)({}, decoratedClass.graphql, {
-      subscriptions: [].concat((0, _toConsumableArray3.default)(existingSubscriptions), [{
+    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
+      subscriptions: [].concat(_toConsumableArray(existingSubscriptions), [{
         name: methodName,
         args: templateStrings.join('')
       }])
@@ -178,8 +168,8 @@ var toSchemaString = function toSchemaString(decoratedClass) {
   })).join('\n');
 };
 
-var getOwnPropertyNames = _getOwnPropertyNames2.default,
-    getPrototypeOf = _getPrototypeOf2.default;
+var getOwnPropertyNames = Object.getOwnPropertyNames,
+    getPrototypeOf = Object.getPrototypeOf;
 
 
 var ignoredMethods = ['constructor', 'getResolvers', 'toSchemaString', 'toExcecutableSchema'];
@@ -233,7 +223,7 @@ var toResolvers = function toResolvers(classInstance) {
   }).map(function (x) {
     return _lodash2.default.isEmpty(x) ? undefined : x;
   }),
-      _map$map$map2 = (0, _slicedToArray3.default)(_map$map$map, 3),
+      _map$map$map2 = _slicedToArray(_map$map$map, 3),
       Query = _map$map$map2[0],
       Mutation = _map$map$map2[1],
       TypeResolvers = _map$map$map2[2];
@@ -263,11 +253,11 @@ var toExcecutableSchema = function toExcecutableSchema(classInstance) {
 
 var type = exports.type = function type(templateStrings) {
   return function (decoratedClass) {
-    decoratedClass.graphql = (0, _extends3.default)({}, decoratedClass.graphql, {
+    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
       type: templateStrings.join('')
     });
 
-    (0, _assign2.default)(decoratedClass.prototype, {
+    Object.assign(decoratedClass.prototype, {
       toExcecutableSchema() {
         return toExcecutableSchema(this);
       },
@@ -283,11 +273,11 @@ var type = exports.type = function type(templateStrings) {
 
 var input = exports.input = function input(templateStrings) {
   return function (decoratedClass) {
-    decoratedClass.graphql = (0, _extends3.default)({}, decoratedClass.graphql, {
+    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
       input: templateStrings.join('')
     });
 
-    (0, _assign2.default)(decoratedClass.prototype, {
+    Object.assign(decoratedClass.prototype, {
       toExcecutableSchema() {
         return toExcecutableSchema(this);
       },
@@ -303,11 +293,11 @@ var input = exports.input = function input(templateStrings) {
 
 var Enum = exports.Enum = function Enum(templateStrings) {
   return function (decoratedClass) {
-    decoratedClass.graphql = (0, _extends3.default)({}, decoratedClass.graphql, {
+    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
       enum: templateStrings.join('')
     });
 
-    (0, _assign2.default)(decoratedClass.prototype, {
+    Object.assign(decoratedClass.prototype, {
       toExcecutableSchema() {
         return toExcecutableSchema(this);
       },
@@ -347,3 +337,6 @@ function generateSchemaJson(schemaContents) {
   var schema = (0, _graphql.buildASTSchema)((0, _graphql.parse)(schemaContents), { commentDescriptions: true });
   return (0, _graphql.graphql)(schema, _utilities.introspectionQuery);
 }
+
+exports.createSchema = _createSchema2.default;
+exports.createSubscriptionServer = _createSubscriptionServer2.default;
