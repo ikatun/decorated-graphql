@@ -246,11 +246,9 @@ export const getMergedResolvers = classesObjects =>
   mergeResolvers(_.map(classesObjects, X => new X()).map(toResolvers));
 
 export const toExcecutableMergedSchema = (classesObjects) => {
-  const graphQLClassesObjects = _.filter(classesObjects, ({ graphql }) => graphql);
-
   return makeExecutableSchema({
-    typeDefs: toMergedSchemasString(graphQLClassesObjects),
-    resolvers: getMergedResolvers(graphQLClassesObjects),
+    typeDefs: toMergedSchemasString(classesObjects),
+    resolvers: getMergedResolvers(classesObjects),
   });
 };
 

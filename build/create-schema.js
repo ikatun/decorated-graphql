@@ -38,7 +38,10 @@ exports.default = function (srcDir) {
   var schemaDestPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _path2.default.join(srcDir, '..');
 
   var requiredModules = glob.sync(_path2.default.join(srcDir, '**/*.graphql.js')).map(require);
-  var all = _lodash2.default.flatten(requiredModules.map(_lodash2.default.values));
+  var all = _lodash2.default.flatten(requiredModules.map(_lodash2.default.values)).filter(function (_ref) {
+    var graphql = _ref.graphql;
+    return graphql;
+  });
   var executableMergedSchema = (0, _lib.toExcecutableMergedSchema)(all);
 
   var mergedSchema = (0, _lib.toMergedSchemasString)(all).replace(schemaPrefix, '');

@@ -342,14 +342,9 @@ var getMergedResolvers = exports.getMergedResolvers = function getMergedResolver
 };
 
 var toExcecutableMergedSchema = exports.toExcecutableMergedSchema = function toExcecutableMergedSchema(classesObjects) {
-  var graphQLClassesObjects = _lodash2.default.filter(classesObjects, function (_ref7) {
-    var graphql = _ref7.graphql;
-    return graphql;
-  });
-
   return (0, _graphqlTools.makeExecutableSchema)({
-    typeDefs: toMergedSchemasString(graphQLClassesObjects),
-    resolvers: getMergedResolvers(graphQLClassesObjects)
+    typeDefs: toMergedSchemasString(classesObjects),
+    resolvers: getMergedResolvers(classesObjects)
   });
 };
 

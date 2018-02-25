@@ -18,7 +18,7 @@ const schemaPrefix = `schema {
 
 export default (srcDir, schemaDestPath = path.join(srcDir, '..')) => {
   const requiredModules = glob.sync(path.join(srcDir, '**/*.graphql.js')).map(require);
-  const all = _.flatten(requiredModules.map(_.values));
+  const all = _.flatten(requiredModules.map(_.values)).filter(({ graphql }) => graphql);
   const executableMergedSchema = toExcecutableMergedSchema(all);
 
   const mergedSchema = toMergedSchemasString(all).replace(schemaPrefix, '');
