@@ -206,8 +206,12 @@ var createSubscriptionMethod = function createSubscriptionMethod(classMethod, cl
   return {
     subscribe: (0, _graphqlSubscriptions.withFilter)(function () {
       return pubsub.asyncIterator(classMethodName);
-    }, function () {
-      return classMethod.apply(undefined, arguments);
+    }, function (payload, variables) {
+      for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        args[_key - 2] = arguments[_key];
+      }
+
+      return classMethod.apply(undefined, [_extends({}, payload, payload[classMethodName]), variables].concat(args));
     })
   };
 };
@@ -224,21 +228,37 @@ var toResolvers = function toResolvers(classInstance) {
     return _lodash2.default.isEmpty(x) ? undefined : x;
   }),
       _map$map$map2 = _slicedToArray(_map$map$map, 3),
-      Query = _map$map$map2[0],
-      Mutation = _map$map$map2[1],
-      TypeResolvers = _map$map$map2[2];
+      query = _map$map$map2[0],
+      mutation = _map$map$map2[1],
+      typeResolvers = _map$map$map2[2];
 
   var subscriptionsNames = getSubscriptionMethods(classObject);
   var subscriptionResolvers = subscriptionsNames.map(function (name) {
     return createSubscriptionMethod(objectInstance[name], name);
   });
-  var Subscription = _lodash2.default.zipObject(subscriptionsNames, subscriptionResolvers);
+  var subscription = _lodash2.default.zipObject(subscriptionsNames, subscriptionResolvers);
 
   var resolvers = _lodash2.default.pickBy({
-    Query,
-    Mutation,
-    Subscription,
-    [classObject.name]: TypeResolvers
+    Query: _lodash2.default.mapValues(query, function (func) {
+      return function (ignoredRootValue) {
+        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+          args[_key2 - 1] = arguments[_key2];
+        }
+
+        return func.apply(undefined, args);
+      };
+    }),
+    Mutation: _lodash2.default.mapValues(mutation, function (func) {
+      return function (ignoredRootValue) {
+        for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+          args[_key3 - 1] = arguments[_key3];
+        }
+
+        return func.apply(undefined, args);
+      };
+    }),
+    Subscription: subscription,
+    [classObject.name]: typeResolvers
   }, _lodash2.default.size);
 
   return resolvers;

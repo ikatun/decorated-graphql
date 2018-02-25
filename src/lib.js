@@ -148,7 +148,7 @@ const createSubscriptionMethod = (classMethod, classMethodName) => {
   return {
     subscribe: withFilter(
       () => pubsub.asyncIterator(classMethodName),
-      (...args) => classMethod(...args),
+      (payload, variables, ...args) => classMethod({ ...payload, ...payload[classMethodName] }, variables, ...args),
     )
   }
 };
@@ -157,7 +157,7 @@ const toResolvers = (classInstance) => {
   const objectInstance = convertToObject(classInstance);
   const classObject = classInstance.constructor;
 
-  const [Query, Mutation, TypeResolvers] =
+  const [query, mutation, typeResolvers] =
     [getQueryMethods, getMutationMethods, getSubqueryMethods]
       .map(selectMethods => selectMethods(classObject))
       .map(methods => _.pick(objectInstance, methods))
@@ -165,13 +165,13 @@ const toResolvers = (classInstance) => {
 
   const subscriptionsNames = getSubscriptionMethods(classObject);
   const subscriptionResolvers = subscriptionsNames.map(name => createSubscriptionMethod(objectInstance[name], name));
-  const Subscription = _.zipObject(subscriptionsNames, subscriptionResolvers);
+  const subscription = _.zipObject(subscriptionsNames, subscriptionResolvers);
 
   const resolvers =_.pickBy({
-    Query,
-    Mutation,
-    Subscription,
-    [classObject.name]: TypeResolvers,
+    Query: _.mapValues(query, func => (ignoredRootValue, ...args) => func(...args)),
+    Mutation: _.mapValues(mutation, func => (ignoredRootValue, ...args) => func(...args)),
+    Subscription: subscription,
+    [classObject.name]: typeResolvers,
   }, _.size);
 
   return resolvers;
