@@ -3,6 +3,10 @@ import { makeExecutableSchema } from 'graphql-tools';
 import { mergeTypes, mergeResolvers } from 'merge-graphql-schemas';
 import { buildASTSchema, graphql, parse } from 'graphql';
 import { introspectionQuery } from 'graphql/utilities';
+import { withFilter, PubSub } from 'graphql-subscriptions';
+
+const pubsub = new PubSub();
+export const publish = (subscriptionName, msg) => pubsub.publish(subscriptionName, { [subscriptionName]: msg });
 
 export const mutation = templateStrings => ({ constructor: decoratedClass }, methodName) => {
   const existingMutations = _.get(decoratedClass, 'graphql.mutations', []);
@@ -22,6 +26,18 @@ export const query = templateStrings => ({ constructor: decoratedClass }, method
   decoratedClass.graphql = {
     ...decoratedClass.graphql,
     queries: [...existingQueries, {
+      name: methodName,
+      args: templateStrings.join(''),
+    }],
+  };
+};
+
+export const subscription = templateStrings => ({ constructor: decoratedClass }, methodName) => {
+  const existingSubscriptions = _.get(decoratedClass, 'graphql.subscriptions', []);
+
+  decoratedClass.graphql = {
+    ...decoratedClass.graphql,
+    subscriptions: [...existingSubscriptions, {
       name: methodName,
       args: templateStrings.join(''),
     }],
@@ -78,8 +94,25 @@ const extractMutations = (decoratedClass) => {
   return `type Mutation {\n${body}\n}\n`;
 };
 
+const extractSubscriptions = (decoratedClass) => {
+  const subscriptions = _.get(decoratedClass, 'graphql.subscriptions');
+  if (_.isEmpty(subscriptions)) {
+    return '';
+  }
+
+  const body = subscriptions.map(({ name, args }) => `  ${name} ${args}`).join('\n');
+  return `type Subscription {\n${body}\n}\n`;
+};
+
 const toSchemaString = decoratedClass =>
-  _.filter([extractInput, extractType, extractQueries, extractMutations, extractEnums].map(x => x(decoratedClass)))
+  _.filter([
+    extractInput,
+    extractType,
+    extractQueries,
+    extractMutations,
+    extractEnums,
+    extractSubscriptions
+  ].map(x => x(decoratedClass)))
     .join('\n');
 
 const { getOwnPropertyNames, getPrototypeOf } = Object;
@@ -94,15 +127,30 @@ const ignoredMethods = [
 const getClassMethods = classObject => _.difference(getOwnPropertyNames(classObject.prototype), ignoredMethods);
 const getQueryMethods = classObject => _.map(_.get(classObject, 'graphql.queries'), 'name');
 const getMutationMethods = classObject => _.map(_.get(classObject, 'graphql.mutations'), 'name');
+const getSubscriptionMethods = classObject => _.map(_.get(classObject, 'graphql.subscriptions'), 'name');
 
 const getSubqueryMethods = classObject =>
-  _.difference(getClassMethods(classObject), getQueryMethods(classObject), getMutationMethods(classObject));
+  _.difference(
+    getClassMethods(classObject),
+    getQueryMethods(classObject),
+    getMutationMethods(classObject),
+    getSubscriptionMethods(classObject),
+  );
 
 const convertToObject = (classInstance) => {
   const propertyNames = getOwnPropertyNames(getPrototypeOf(classInstance)).filter(x => x !== 'constructor');
   const properties = propertyNames.map(name => classInstance[name]);
 
   return _.zipObject(propertyNames, properties);
+};
+
+const createSubscriptionMethod = (classMethod, classMethodName) => {
+  return {
+    subscribe: withFilter(
+      () => pubsub.asyncIterator(classMethodName),
+      (...args) => classMethod(...args),
+    )
+  }
 };
 
 const toResolvers = (classInstance) => {
@@ -115,11 +163,18 @@ const toResolvers = (classInstance) => {
       .map(methods => _.pick(objectInstance, methods))
       .map(x => _.isEmpty(x) ? undefined : x);
 
-  return _.pickBy({
+  const subscriptionsNames = getSubscriptionMethods(classObject);
+  const subscriptionResolvers = subscriptionsNames.map(name => createSubscriptionMethod(objectInstance[name], name));
+  const Subscription = _.zipObject(subscriptionsNames, subscriptionResolvers);
+
+  const resolvers =_.pickBy({
     Query,
     Mutation,
+    Subscription,
     [classObject.name]: TypeResolvers,
   }, _.size);
+
+  return resolvers;
 };
 
 const toExcecutableSchema = classInstance => makeExecutableSchema({
@@ -190,11 +245,14 @@ export const toMergedSchemasString = classesObjects =>
 export const getMergedResolvers = classesObjects =>
   mergeResolvers(_.map(classesObjects, X => new X()).map(toResolvers));
 
-export const toExcecutableMergedSchema = classesObjects =>
-  makeExecutableSchema({
-    typeDefs: toMergedSchemasString(classesObjects),
-    resolvers: getMergedResolvers(classesObjects),
+export const toExcecutableMergedSchema = (classesObjects) => {
+  const graphQLClassesObjects = _.filter(classesObjects, ({ graphql }) => graphql);
+
+  return makeExecutableSchema({
+    typeDefs: toMergedSchemasString(graphQLClassesObjects),
+    resolvers: getMergedResolvers(graphQLClassesObjects),
   });
+};
 
 export function generateSchemaJson(schemaContents: string) {
   const schema = buildASTSchema(parse(schemaContents), { commentDescriptions: true });
