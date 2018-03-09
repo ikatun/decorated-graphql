@@ -23,6 +23,12 @@ export default (srcDir, schemaDestPath = path.join(srcDir, '..')) => {
 
   const mergedSchema = toMergedSchemasString(all).replace(schemaPrefix, '');
 
+  createSchemaFiles(schemaDestPath, mergedSchema);
+
+  return executableMergedSchema;
+};
+
+export function createSchemaFiles(schemaDestPath, mergedSchema) {
   fs.writeFileSync(
     path.join(schemaDestPath, 'graphql.graphql'),
     mergedSchema,
@@ -36,7 +42,4 @@ export default (srcDir, schemaDestPath = path.join(srcDir, '..')) => {
       'utf8',
     );
   });
-
-
-  return executableMergedSchema;
-};
+}
