@@ -44,8 +44,10 @@ export const subscription = templateStrings => ({ constructor: decoratedClass },
   };
 };
 
+const getName = decoratedClass => _.get(decoratedClass, 'graphql.name') || decoratedClass.name;
+
 const extractType = (decoratedClass) => {
-  const { name: className } = decoratedClass;
+  const className = getName(decoratedClass);
   const type = _.get(decoratedClass, 'graphql.type');
   if (!type) {
     return '';
@@ -55,7 +57,7 @@ const extractType = (decoratedClass) => {
 };
 
 const extractInput = (decoratedClass) => {
-  const { name: className } = decoratedClass;
+  const className = getName(decoratedClass);
   const input = _.get(decoratedClass, 'graphql.input');
   if (!input) {
     return '';
@@ -65,7 +67,7 @@ const extractInput = (decoratedClass) => {
 };
 
 const extractEnums = (decoratedClass) => {
-  const { name: className } = decoratedClass;
+  const className = getName(decoratedClass);
   const Enum = _.get(decoratedClass, 'graphql.enum');
   if (!Enum) {
     return '';

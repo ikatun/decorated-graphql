@@ -79,9 +79,12 @@ var subscription = exports.subscription = function subscription(templateStrings)
   };
 };
 
-var extractType = function extractType(decoratedClass) {
-  var className = decoratedClass.name;
+var getName = function getName(decoratedClass) {
+  return _lodash2.default.get(decoratedClass, 'graphql.name') || decoratedClass.name;
+};
 
+var extractType = function extractType(decoratedClass) {
+  var className = getName(decoratedClass);
   var type = _lodash2.default.get(decoratedClass, 'graphql.type');
   if (!type) {
     return '';
@@ -91,8 +94,7 @@ var extractType = function extractType(decoratedClass) {
 };
 
 var extractInput = function extractInput(decoratedClass) {
-  var className = decoratedClass.name;
-
+  var className = getName(decoratedClass);
   var input = _lodash2.default.get(decoratedClass, 'graphql.input');
   if (!input) {
     return '';
@@ -102,8 +104,7 @@ var extractInput = function extractInput(decoratedClass) {
 };
 
 var extractEnums = function extractEnums(decoratedClass) {
-  var className = decoratedClass.name;
-
+  var className = getName(decoratedClass);
   var Enum = _lodash2.default.get(decoratedClass, 'graphql.enum');
   if (!Enum) {
     return '';
