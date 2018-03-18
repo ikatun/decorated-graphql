@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createSubscriptionServer = exports.createSchema = exports.toExcecutableMergedSchema = exports.getMergedResolvers = exports.toMergedSchemasString = exports.Enum = exports.input = exports.type = exports.subscription = exports.query = exports.mutation = exports.publish = undefined;
+exports.toExcecutableMergedSchema = exports.getMergedResolvers = exports.toMergedSchemasString = exports.Enum = exports.input = exports.type = exports.subscription = exports.query = exports.mutation = exports.publish = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -24,14 +24,6 @@ var _graphql = require('graphql');
 var _utilities = require('graphql/utilities');
 
 var _graphqlSubscriptions = require('graphql-subscriptions');
-
-var _createSchema = require('./create-schema');
-
-var _createSchema2 = _interopRequireDefault(_createSchema);
-
-var _createSubscriptionServer = require('./create-subscription-server');
-
-var _createSubscriptionServer2 = _interopRequireDefault(_createSubscriptionServer);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -352,6 +344,3 @@ function generateSchemaJson(schemaContents) {
   var schema = (0, _graphql.buildASTSchema)((0, _graphql.parse)(schemaContents), { commentDescriptions: true });
   return (0, _graphql.graphql)(schema, _utilities.introspectionQuery);
 }
-
-exports.createSchema = _createSchema2.default;
-exports.createSubscriptionServer = _createSubscriptionServer2.default;

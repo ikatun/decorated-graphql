@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.createSchemaFiles = createSchemaFiles;
 
 var _fs = require('fs');
 
@@ -46,11 +47,15 @@ exports.default = function (srcDir) {
 
   var mergedSchema = (0, _lib.toMergedSchemasString)(all).replace(schemaPrefix, '');
 
+  createSchemaFiles(schemaDestPath, mergedSchema);
+
+  return executableMergedSchema;
+};
+
+function createSchemaFiles(schemaDestPath, mergedSchema) {
   _fs2.default.writeFileSync(_path2.default.join(schemaDestPath, 'graphql.graphql'), mergedSchema, 'utf8');
 
   (0, _lib.generateSchemaJson)(mergedSchema).then(function (json) {
     _fs2.default.writeFileSync(_path2.default.join(schemaDestPath, 'graphql.schema.json'), JSON.stringify(json, null, 2), 'utf8');
   });
-
-  return executableMergedSchema;
-};
+}
