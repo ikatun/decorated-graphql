@@ -212,6 +212,7 @@ var createSubscriptionMethod = function createSubscriptionMethod(classMethod, cl
 var toResolvers = function toResolvers(classInstance) {
   var objectInstance = convertToObject(classInstance);
   var classObject = classInstance.constructor;
+  var typeName = getName(classObject);
 
   var _map$map$map = [getQueryMethods, getMutationMethods, getSubqueryMethods].map(function (selectMethods) {
     return selectMethods(classObject);
@@ -251,7 +252,7 @@ var toResolvers = function toResolvers(classInstance) {
       };
     }),
     Subscription: subscription,
-    [classObject.name]: typeResolvers
+    [typeName]: typeResolvers
   }, _lodash2.default.size);
 
   return resolvers;

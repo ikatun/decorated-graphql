@@ -158,6 +158,7 @@ const createSubscriptionMethod = (classMethod, classMethodName) => {
 const toResolvers = (classInstance) => {
   const objectInstance = convertToObject(classInstance);
   const classObject = classInstance.constructor;
+  const typeName = getName(classObject);
 
   const [query, mutation, typeResolvers] =
     [getQueryMethods, getMutationMethods, getSubqueryMethods]
@@ -173,7 +174,7 @@ const toResolvers = (classInstance) => {
     Query: _.mapValues(query, func => (ignoredRootValue, ...args) => func(...args)),
     Mutation: _.mapValues(mutation, func => (ignoredRootValue, ...args) => func(...args)),
     Subscription: subscription,
-    [classObject.name]: typeResolvers,
+    [typeName]: typeResolvers,
   }, _.size);
 
   return resolvers;
