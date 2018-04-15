@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.toExcecutableMergedSchema = exports.getMergedResolvers = exports.toMergedSchemasString = exports.Enum = exports.input = exports.type = exports.subscription = exports.query = exports.mutation = exports.publish = undefined;
+exports.toExcecutableMergedSchema = exports.getMergedResolvers = exports.toMergedSchemasString = exports.Enum = exports.union = exports.Interface = exports.input = exports.type = exports.subscription = exports.query = exports.mutation = exports.publish = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -113,6 +113,26 @@ var extractEnums = function extractEnums(decoratedClass) {
   return `enum ${className} { ${Enum}\n}\n`;
 };
 
+var extractInterface = function extractInterface(decoratedClass) {
+  var className = getName(decoratedClass);
+  var Interface = _lodash2.default.get(decoratedClass, 'graphql.interface');
+  if (!Interface) {
+    return '';
+  }
+
+  return `interface ${className} { ${Interface}\n}\n`;
+};
+
+var extractUnion = function extractUnion(decoratedClass) {
+  var className = getName(decoratedClass);
+  var union = _lodash2.default.get(decoratedClass, 'graphql.union');
+  if (!union) {
+    return '';
+  }
+
+  return `union ${className} = ${union}\n`;
+};
+
 var extractQueries = function extractQueries(decoratedClass) {
   var queries = _lodash2.default.get(decoratedClass, 'graphql.queries');
   if (_lodash2.default.isEmpty(queries)) {
@@ -156,7 +176,7 @@ var extractSubscriptions = function extractSubscriptions(decoratedClass) {
 };
 
 var toSchemaString = function toSchemaString(decoratedClass) {
-  return _lodash2.default.filter([extractInput, extractType, extractQueries, extractMutations, extractEnums, extractSubscriptions].map(function (x) {
+  return _lodash2.default.filter([extractInput, extractType, extractInterface, extractUnion, extractQueries, extractMutations, extractEnums, extractSubscriptions].map(function (x) {
     return x(decoratedClass);
   })).join('\n');
 };
@@ -289,6 +309,46 @@ var input = exports.input = function input(templateStrings) {
   return function (decoratedClass) {
     decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
       input: templateStrings.join('')
+    });
+
+    Object.assign(decoratedClass.prototype, {
+      toExcecutableSchema() {
+        return toExcecutableSchema(this);
+      },
+      toSchemaString() {
+        return toSchemaString(decoratedClass);
+      },
+      getResolvers() {
+        return toResolvers(this);
+      }
+    });
+  };
+};
+
+var Interface = exports.Interface = function Interface(templateStrings) {
+  return function (decoratedClass) {
+    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
+      interface: templateStrings.join('')
+    });
+
+    Object.assign(decoratedClass.prototype, {
+      toExcecutableSchema() {
+        return toExcecutableSchema(this);
+      },
+      toSchemaString() {
+        return toSchemaString(decoratedClass);
+      },
+      getResolvers() {
+        return toResolvers(this);
+      }
+    });
+  };
+};
+
+var union = exports.union = function union(templateStrings) {
+  return function (decoratedClass) {
+    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
+      union: templateStrings.join('')
     });
 
     Object.assign(decoratedClass.prototype, {

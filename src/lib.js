@@ -76,6 +76,26 @@ const extractEnums = (decoratedClass) => {
   return `enum ${className} { ${Enum}\n}\n`;
 };
 
+const extractInterface = (decoratedClass) => {
+  const className = getName(decoratedClass);
+  const Interface = _.get(decoratedClass, 'graphql.interface');
+  if (!Interface) {
+    return '';
+  }
+
+  return `interface ${className} { ${Interface}\n}\n`;
+};
+
+const extractUnion = (decoratedClass) => {
+  const className = getName(decoratedClass);
+  const union = _.get(decoratedClass, 'graphql.union');
+  if (!union) {
+    return '';
+  }
+
+  return `union ${className} = ${union}\n`;
+};
+
 const extractQueries = (decoratedClass) => {
   const queries = _.get(decoratedClass, 'graphql.queries');
   if (_.isEmpty(queries)) {
@@ -110,10 +130,12 @@ const toSchemaString = decoratedClass =>
   _.filter([
     extractInput,
     extractType,
+    extractInterface,
+    extractUnion,
     extractQueries,
     extractMutations,
     extractEnums,
-    extractSubscriptions
+    extractSubscriptions,
   ].map(x => x(decoratedClass)))
     .join('\n');
 
@@ -208,6 +230,45 @@ export const input = templateStrings => (decoratedClass) => {
   decoratedClass.graphql = {
     ...decoratedClass.graphql,
     input: templateStrings.join(''),
+  };
+
+  Object.assign(decoratedClass.prototype, {
+    toExcecutableSchema() {
+      return toExcecutableSchema(this);
+    },
+    toSchemaString() {
+      return toSchemaString(decoratedClass);
+    },
+    getResolvers() {
+      return toResolvers(this);
+    },
+  });
+};
+
+
+export const Interface = templateStrings => (decoratedClass) => {
+  decoratedClass.graphql = {
+    ...decoratedClass.graphql,
+    interface: templateStrings.join(''),
+  };
+
+  Object.assign(decoratedClass.prototype, {
+    toExcecutableSchema() {
+      return toExcecutableSchema(this);
+    },
+    toSchemaString() {
+      return toSchemaString(decoratedClass);
+    },
+    getResolvers() {
+      return toResolvers(this);
+    },
+  });
+};
+
+export const union = templateStrings => (decoratedClass) => {
+  decoratedClass.graphql = {
+    ...decoratedClass.graphql,
+    union: templateStrings.join(''),
   };
 
   Object.assign(decoratedClass.prototype, {
