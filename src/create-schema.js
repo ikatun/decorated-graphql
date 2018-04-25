@@ -23,7 +23,9 @@ export default (srcDir, schemaDestPath = path.join(srcDir, '..')) => {
 
   const mergedSchema = toMergedSchemasString(all).replace(schemaPrefix, '');
 
-  createSchemaFiles(schemaDestPath, mergedSchema);
+  if (schemaDestPath) {
+    createSchemaFiles(schemaDestPath, mergedSchema);
+  }
 
   return executableMergedSchema;
 };

@@ -47,7 +47,9 @@ exports.default = function (srcDir) {
 
   var mergedSchema = (0, _lib.toMergedSchemasString)(all).replace(schemaPrefix, '');
 
-  createSchemaFiles(schemaDestPath, mergedSchema);
+  if (schemaDestPath) {
+    createSchemaFiles(schemaDestPath, mergedSchema);
+  }
 
   return executableMergedSchema;
 };
