@@ -4,6 +4,8 @@ import { mergeTypes, mergeResolvers } from 'merge-graphql-schemas';
 import { buildASTSchema, graphql, parse } from 'graphql';
 import { introspectionQuery } from 'graphql/utilities';
 import { withFilter, PubSub } from 'graphql-subscriptions';
+import GraphQLJSON from 'graphql-type-json';
+
 
 const pubsub = new PubSub();
 export const publish = (subscriptionName, msg) => pubsub.publish(subscriptionName, { [subscriptionName]: msg });
@@ -309,10 +311,18 @@ export const toMergedSchemasString = classesObjects =>
 export const getMergedResolvers = classesObjects =>
   mergeResolvers(_.map(classesObjects, X => new X()).map(toResolvers));
 
+const jsonSchemaString = `
+  scalar JSON
+`;
+
+
 export const toExcecutableMergedSchema = (classesObjects) => {
   return makeExecutableSchema({
-    typeDefs: toMergedSchemasString(classesObjects),
-    resolvers: getMergedResolvers(classesObjects),
+    typeDefs: `${jsonSchemaString}\n${toMergedSchemasString(classesObjects)}`,
+    resolvers: {
+      ...getMergedResolvers(classesObjects),
+      JSON: GraphQLJSON,
+    },
   });
 };
 

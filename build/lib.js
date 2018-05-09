@@ -25,6 +25,10 @@ var _utilities = require('graphql/utilities');
 
 var _graphqlSubscriptions = require('graphql-subscriptions');
 
+var _graphqlTypeJson = require('graphql-type-json');
+
+var _graphqlTypeJson2 = _interopRequireDefault(_graphqlTypeJson);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -395,10 +399,16 @@ var getMergedResolvers = exports.getMergedResolvers = function getMergedResolver
   }).map(toResolvers));
 };
 
+var jsonSchemaString = `
+  scalar JSON
+`;
+
 var toExcecutableMergedSchema = exports.toExcecutableMergedSchema = function toExcecutableMergedSchema(classesObjects) {
   return (0, _graphqlTools.makeExecutableSchema)({
-    typeDefs: toMergedSchemasString(classesObjects),
-    resolvers: getMergedResolvers(classesObjects)
+    typeDefs: `${jsonSchemaString}\n${toMergedSchemasString(classesObjects)}`,
+    resolvers: _extends({}, getMergedResolvers(classesObjects), {
+      JSON: _graphqlTypeJson2.default
+    })
   });
 };
 
