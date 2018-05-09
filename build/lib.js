@@ -389,8 +389,12 @@ var Enum = exports.Enum = function Enum(templateStrings) {
   };
 };
 
+var jsonSchemaString = `
+  scalar JSON
+`;
+
 var toMergedSchemasString = exports.toMergedSchemasString = function toMergedSchemasString(classesObjects) {
-  return (0, _mergeGraphqlSchemas.mergeTypes)(_lodash2.default.map(classesObjects, toSchemaString));
+  return (0, _mergeGraphqlSchemas.mergeTypes)(_lodash2.default.map(classesObjects, toSchemaString).concat(jsonSchemaString));
 };
 
 var getMergedResolvers = exports.getMergedResolvers = function getMergedResolvers(classesObjects) {
@@ -399,13 +403,9 @@ var getMergedResolvers = exports.getMergedResolvers = function getMergedResolver
   }).map(toResolvers));
 };
 
-var jsonSchemaString = `
-  scalar JSON
-`;
-
 var toExcecutableMergedSchema = exports.toExcecutableMergedSchema = function toExcecutableMergedSchema(classesObjects) {
   return (0, _graphqlTools.makeExecutableSchema)({
-    typeDefs: `${jsonSchemaString}\n${toMergedSchemasString(classesObjects)}`,
+    typeDefs: toMergedSchemasString(classesObjects),
     resolvers: _extends({}, getMergedResolvers(classesObjects), {
       JSON: _graphqlTypeJson2.default
     })

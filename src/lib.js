@@ -305,20 +305,20 @@ export const Enum = templateStrings => (decoratedClass) => {
   });
 };
 
-export const toMergedSchemasString = classesObjects =>
-  mergeTypes(_.map(classesObjects, toSchemaString));
-
-export const getMergedResolvers = classesObjects =>
-  mergeResolvers(_.map(classesObjects, X => new X()).map(toResolvers));
-
 const jsonSchemaString = `
   scalar JSON
 `;
 
+export const toMergedSchemasString = classesObjects =>
+  mergeTypes(_.map(classesObjects, toSchemaString).concat(jsonSchemaString));
+
+export const getMergedResolvers = classesObjects =>
+  mergeResolvers(_.map(classesObjects, X => new X()).map(toResolvers));
+
 
 export const toExcecutableMergedSchema = (classesObjects) => {
   return makeExecutableSchema({
-    typeDefs: `${jsonSchemaString}\n${toMergedSchemasString(classesObjects)}`,
+    typeDefs: toMergedSchemasString(classesObjects),
     resolvers: {
       ...getMergedResolvers(classesObjects),
       JSON: GraphQLJSON,
