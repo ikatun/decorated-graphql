@@ -72,6 +72,10 @@ export class Message {
   onMessageCreated(newMessage, variables) {
     return newMessage.recvId === variables.recvId;
   }
+  
+  recver(message) {
+    return users.filter(user => user.id === message.recvId)[0];
+  }
 }
 
 // Anything.graphql.js file
