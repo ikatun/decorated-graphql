@@ -90,7 +90,7 @@ export class Anything {
 }
 ```
 ## Example server code with subscriptions
-```
+```JS
 import express from 'express';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import bodyParser from 'body-parser';
