@@ -2,12 +2,16 @@
   "name": "decorated-graphql",
   "version": "0.2.11",
   "description": "",
+  "author": "Ivo Katunaric",
   "main": "./build/lib",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "nnode --transpile"
   },
-  "author": "",
+   "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikatun/decorated-graphql.git"
+  },
   "license": "ISC",
   "dependencies": {
     "graphql": "*",
@@ -23,5 +27,9 @@
   },
   "peerDependencies": {
     "glob": "*"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/ikatun/decorated-graphql/issues"
+  },
+  "homepage": "https://github.com/ikatun/decorated-graphql#readme"
 }
