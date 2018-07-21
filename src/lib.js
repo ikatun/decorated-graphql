@@ -6,137 +6,51 @@ import { introspectionQuery } from 'graphql/utilities';
 import { withFilter, PubSub } from 'graphql-subscriptions';
 import GraphQLJSON from 'graphql-type-json';
 
+import { deepMergeAt, getName, graphQLMetadataToString, integratedGraphQLTypeToString } from './utils';
 
 const pubsub = new PubSub();
 export const publish = (subscriptionName, msg) => pubsub.publish(subscriptionName, { [subscriptionName]: msg });
 
 export const mutation = templateStrings => ({ constructor: decoratedClass }, methodName) => {
-  const existingMutations = _.get(decoratedClass, 'graphql.mutations', []);
-
-  decoratedClass.graphql = {
-    ...decoratedClass.graphql,
-    mutations: [...existingMutations, {
-      name: methodName,
-      args: templateStrings.join(''),
-    }],
-  };
+  deepMergeAt(decoratedClass, 'graphql.mutations', [{
+    name: methodName,
+    args: templateStrings.join(''),
+  }]);
 };
 
 export const query = templateStrings => ({ constructor: decoratedClass }, methodName) => {
-  const existingQueries = _.get(decoratedClass, 'graphql.queries', []);
-
-  decoratedClass.graphql = {
-    ...decoratedClass.graphql,
-    queries: [...existingQueries, {
-      name: methodName,
-      args: templateStrings.join(''),
-    }],
-  };
+  deepMergeAt(decoratedClass, 'graphql.queries', [{
+    name: methodName,
+    args: templateStrings.join(''),
+  }]);
 };
 
 export const subscription = templateStrings => ({ constructor: decoratedClass }, methodName) => {
-  const existingSubscriptions = _.get(decoratedClass, 'graphql.subscriptions', []);
-
-  decoratedClass.graphql = {
-    ...decoratedClass.graphql,
-    subscriptions: [...existingSubscriptions, {
-      name: methodName,
-      args: templateStrings.join(''),
-    }],
-  };
+  deepMergeAt(decoratedClass, 'graphql.subscriptions', [{
+    name: methodName,
+    args: templateStrings.join(''),
+  }])
 };
 
-const getName = decoratedClass => _.get(decoratedClass, 'graphql.name') || decoratedClass.name;
+const extractType = (decoratedClass) => graphQLMetadataToString(decoratedClass, 'type');
+const extractInput = (decoratedClass) => graphQLMetadataToString(decoratedClass, 'input');
+const extractEnum = (decoratedClass) => graphQLMetadataToString(decoratedClass, 'enum');
+const extractInterface = (decoratedClass) => graphQLMetadataToString(decoratedClass, 'interface');
+const extractUnion = (decoratedClass) => graphQLMetadataToString(decoratedClass, 'union');
 
-const extractType = (decoratedClass) => {
-  const className = getName(decoratedClass);
-  const type = _.get(decoratedClass, 'graphql.type');
-  if (!type) {
-    return '';
-  }
-
-  return `type ${className} { ${type}\n}\n`;
-};
-
-const extractInput = (decoratedClass) => {
-  const className = getName(decoratedClass);
-  const input = _.get(decoratedClass, 'graphql.input');
-  if (!input) {
-    return '';
-  }
-
-  return `input ${className} { ${input}\n}\n`;
-};
-
-const extractEnums = (decoratedClass) => {
-  const className = getName(decoratedClass);
-  const Enum = _.get(decoratedClass, 'graphql.enum');
-  if (!Enum) {
-    return '';
-  }
-
-  return `enum ${className} { ${Enum}\n}\n`;
-};
-
-const extractInterface = (decoratedClass) => {
-  const className = getName(decoratedClass);
-  const Interface = _.get(decoratedClass, 'graphql.interface');
-  if (!Interface) {
-    return '';
-  }
-
-  return `interface ${className} { ${Interface}\n}\n`;
-};
-
-const extractUnion = (decoratedClass) => {
-  const className = getName(decoratedClass);
-  const union = _.get(decoratedClass, 'graphql.union');
-  if (!union) {
-    return '';
-  }
-
-  return `union ${className} = ${union}\n`;
-};
-
-const extractQueries = (decoratedClass) => {
-  const queries = _.get(decoratedClass, 'graphql.queries');
-  if (_.isEmpty(queries)) {
-    return '';
-  }
-
-  const body = queries.map(({ name, args }) => `  ${name} ${args}`).join('\n');
-  return `type Query {\n${body}\n}\n`;
-};
-
-const extractMutations = (decoratedClass) => {
-  const mutations = _.get(decoratedClass, 'graphql.mutations');
-  if (_.isEmpty(mutations)) {
-    return '';
-  }
-
-  const body = mutations.map(({ name, args }) => `  ${name} ${args}`).join('\n');
-  return `type Mutation {\n${body}\n}\n`;
-};
-
-const extractSubscriptions = (decoratedClass) => {
-  const subscriptions = _.get(decoratedClass, 'graphql.subscriptions');
-  if (_.isEmpty(subscriptions)) {
-    return '';
-  }
-
-  const body = subscriptions.map(({ name, args }) => `  ${name} ${args}`).join('\n');
-  return `type Subscription {\n${body}\n}\n`;
-};
+const extractQueries = (decoratedClass) => integratedGraphQLTypeToString(decoratedClass, 'Query', 'queries');
+const extractMutations = (decoratedClass) => integratedGraphQLTypeToString(decoratedClass, 'Mutation', 'mutations');
+const extractSubscriptions = (decoratedClass) =>
+  integratedGraphQLTypeToString(decoratedClass, 'Subscription', 'subscriptions');
 
 const toSchemaString = decoratedClass =>
-  _.filter([
-    extractInput,
+  _.filter([extractInput,
     extractType,
     extractInterface,
     extractUnion,
     extractQueries,
     extractMutations,
-    extractEnums,
+    extractEnum,
     extractSubscriptions,
   ].map(x => x(decoratedClass)))
     .join('\n');
