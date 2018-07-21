@@ -29,9 +29,9 @@ var _graphqlTypeJson = require('graphql-type-json');
 
 var _graphqlTypeJson2 = _interopRequireDefault(_graphqlTypeJson);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _utils = require('./utils');
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var pubsub = new _graphqlSubscriptions.PubSub();
 var publish = exports.publish = function publish(subscriptionName, msg) {
@@ -42,14 +42,10 @@ var mutation = exports.mutation = function mutation(templateStrings) {
   return function (_ref, methodName) {
     var decoratedClass = _ref.constructor;
 
-    var existingMutations = _lodash2.default.get(decoratedClass, 'graphql.mutations', []);
-
-    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
-      mutations: [].concat(_toConsumableArray(existingMutations), [{
-        name: methodName,
-        args: templateStrings.join('')
-      }])
-    });
+    (0, _utils.deepMergeAt)(decoratedClass, 'graphql.mutations', [{
+      name: methodName,
+      args: templateStrings.join('')
+    }]);
   };
 };
 
@@ -57,14 +53,10 @@ var query = exports.query = function query(templateStrings) {
   return function (_ref2, methodName) {
     var decoratedClass = _ref2.constructor;
 
-    var existingQueries = _lodash2.default.get(decoratedClass, 'graphql.queries', []);
-
-    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
-      queries: [].concat(_toConsumableArray(existingQueries), [{
-        name: methodName,
-        args: templateStrings.join('')
-      }])
-    });
+    (0, _utils.deepMergeAt)(decoratedClass, 'graphql.queries', [{
+      name: methodName,
+      args: templateStrings.join('')
+    }]);
   };
 };
 
@@ -72,115 +64,46 @@ var subscription = exports.subscription = function subscription(templateStrings)
   return function (_ref3, methodName) {
     var decoratedClass = _ref3.constructor;
 
-    var existingSubscriptions = _lodash2.default.get(decoratedClass, 'graphql.subscriptions', []);
-
-    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
-      subscriptions: [].concat(_toConsumableArray(existingSubscriptions), [{
-        name: methodName,
-        args: templateStrings.join('')
-      }])
-    });
+    (0, _utils.deepMergeAt)(decoratedClass, 'graphql.subscriptions', [{
+      name: methodName,
+      args: templateStrings.join('')
+    }]);
   };
 };
 
-var getName = function getName(decoratedClass) {
-  return _lodash2.default.get(decoratedClass, 'graphql.name') || decoratedClass.name;
-};
-
 var extractType = function extractType(decoratedClass) {
-  var className = getName(decoratedClass);
-  var type = _lodash2.default.get(decoratedClass, 'graphql.type');
-  if (!type) {
-    return '';
-  }
-
-  return `type ${className} { ${type}\n}\n`;
+  return (0, _utils.graphQLMetadataToString)(decoratedClass, 'type');
 };
-
 var extractInput = function extractInput(decoratedClass) {
-  var className = getName(decoratedClass);
-  var input = _lodash2.default.get(decoratedClass, 'graphql.input');
-  if (!input) {
-    return '';
-  }
-
-  return `input ${className} { ${input}\n}\n`;
+  return (0, _utils.graphQLMetadataToString)(decoratedClass, 'input');
 };
-
-var extractEnums = function extractEnums(decoratedClass) {
-  var className = getName(decoratedClass);
-  var Enum = _lodash2.default.get(decoratedClass, 'graphql.enum');
-  if (!Enum) {
-    return '';
-  }
-
-  return `enum ${className} { ${Enum}\n}\n`;
+var extractEnum = function extractEnum(decoratedClass) {
+  return (0, _utils.graphQLMetadataToString)(decoratedClass, 'enum');
 };
-
 var extractInterface = function extractInterface(decoratedClass) {
-  var className = getName(decoratedClass);
-  var Interface = _lodash2.default.get(decoratedClass, 'graphql.interface');
-  if (!Interface) {
-    return '';
-  }
-
-  return `interface ${className} { ${Interface}\n}\n`;
+  return (0, _utils.graphQLMetadataToString)(decoratedClass, 'interface');
 };
-
 var extractUnion = function extractUnion(decoratedClass) {
-  var className = getName(decoratedClass);
   var union = _lodash2.default.get(decoratedClass, 'graphql.union');
   if (!union) {
     return '';
   }
 
-  return `union ${className} = ${union}\n`;
+  return `union ${(0, _utils.getName)(decoratedClass)} = ${union}\n`;
 };
 
 var extractQueries = function extractQueries(decoratedClass) {
-  var queries = _lodash2.default.get(decoratedClass, 'graphql.queries');
-  if (_lodash2.default.isEmpty(queries)) {
-    return '';
-  }
-
-  var body = queries.map(function (_ref4) {
-    var name = _ref4.name,
-        args = _ref4.args;
-    return `  ${name} ${args}`;
-  }).join('\n');
-  return `type Query {\n${body}\n}\n`;
+  return (0, _utils.integratedGraphQLTypeToString)(decoratedClass, 'Query', 'queries');
 };
-
 var extractMutations = function extractMutations(decoratedClass) {
-  var mutations = _lodash2.default.get(decoratedClass, 'graphql.mutations');
-  if (_lodash2.default.isEmpty(mutations)) {
-    return '';
-  }
-
-  var body = mutations.map(function (_ref5) {
-    var name = _ref5.name,
-        args = _ref5.args;
-    return `  ${name} ${args}`;
-  }).join('\n');
-  return `type Mutation {\n${body}\n}\n`;
+  return (0, _utils.integratedGraphQLTypeToString)(decoratedClass, 'Mutation', 'mutations');
 };
-
 var extractSubscriptions = function extractSubscriptions(decoratedClass) {
-  var subscriptions = _lodash2.default.get(decoratedClass, 'graphql.subscriptions');
-  if (_lodash2.default.isEmpty(subscriptions)) {
-    return '';
-  }
-
-  var body = subscriptions.map(function (_ref6) {
-    var name = _ref6.name,
-        args = _ref6.args;
-    return `  ${name} ${args}`;
-  }).join('\n');
-  return `type Subscription {\n${body}\n}\n`;
+  return (0, _utils.integratedGraphQLTypeToString)(decoratedClass, 'Subscription', 'subscriptions');
 };
 
 var toSchemaString = function toSchemaString(decoratedClass) {
-  return _lodash2.default.filter([extractInput, extractType, extractInterface, extractUnion, extractQueries, extractMutations, extractEnums, extractSubscriptions].map(function (x) {
+  return _lodash2.default.filter([extractInput, extractType, extractInterface, extractUnion, extractQueries, extractMutations, extractEnum, extractSubscriptions].map(function (x) {
     return x(decoratedClass);
   })).join('\n');
 };
@@ -236,7 +159,7 @@ var createSubscriptionMethod = function createSubscriptionMethod(classMethod, cl
 var toResolvers = function toResolvers(classInstance) {
   var objectInstance = convertToObject(classInstance);
   var classObject = classInstance.constructor;
-  var typeName = getName(classObject);
+  var typeName = (0, _utils.getName)(classObject);
 
   var _map$map$map = [getQueryMethods, getMutationMethods, getSubqueryMethods].map(function (selectMethods) {
     return selectMethods(classObject);
@@ -291,101 +214,27 @@ var toExcecutableSchema = function toExcecutableSchema(classInstance) {
 
 var type = exports.type = function type(templateStrings) {
   return function (decoratedClass) {
-    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
-      type: templateStrings.join('')
-    });
-
-    Object.assign(decoratedClass.prototype, {
-      toExcecutableSchema() {
-        return toExcecutableSchema(this);
-      },
-      toSchemaString() {
-        return toSchemaString(decoratedClass);
-      },
-      getResolvers() {
-        return toResolvers(this);
-      }
-    });
+    return (0, _utils.deepMergeAt)(decoratedClass, 'graphql.type', templateStrings.join(''));
   };
 };
-
 var input = exports.input = function input(templateStrings) {
   return function (decoratedClass) {
-    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
-      input: templateStrings.join('')
-    });
-
-    Object.assign(decoratedClass.prototype, {
-      toExcecutableSchema() {
-        return toExcecutableSchema(this);
-      },
-      toSchemaString() {
-        return toSchemaString(decoratedClass);
-      },
-      getResolvers() {
-        return toResolvers(this);
-      }
-    });
+    return (0, _utils.deepMergeAt)(decoratedClass, 'graphql.input', templateStrings.join(''));
   };
 };
-
 var Interface = exports.Interface = function Interface(templateStrings) {
   return function (decoratedClass) {
-    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
-      interface: templateStrings.join('')
-    });
-
-    Object.assign(decoratedClass.prototype, {
-      toExcecutableSchema() {
-        return toExcecutableSchema(this);
-      },
-      toSchemaString() {
-        return toSchemaString(decoratedClass);
-      },
-      getResolvers() {
-        return toResolvers(this);
-      }
-    });
+    return (0, _utils.deepMergeAt)(decoratedClass, 'graphql.interface', templateStrings.join(''));
   };
 };
-
 var union = exports.union = function union(templateStrings) {
   return function (decoratedClass) {
-    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
-      union: templateStrings.join('')
-    });
-
-    Object.assign(decoratedClass.prototype, {
-      toExcecutableSchema() {
-        return toExcecutableSchema(this);
-      },
-      toSchemaString() {
-        return toSchemaString(decoratedClass);
-      },
-      getResolvers() {
-        return toResolvers(this);
-      }
-    });
+    return (0, _utils.deepMergeAt)(decoratedClass, 'graphql.union', templateStrings.join(''));
   };
 };
-
 var Enum = exports.Enum = function Enum(templateStrings) {
   return function (decoratedClass) {
-    decoratedClass.graphql = _extends({}, decoratedClass.graphql, {
-      enum: templateStrings.join('')
-    });
-
-    Object.assign(decoratedClass.prototype, {
-      toExcecutableSchema() {
-        return toExcecutableSchema(this);
-      },
-      toSchemaString() {
-        return toSchemaString(decoratedClass);
-      },
-      getResolvers() {
-        return toResolvers(this);
-      }
-    });
+    return (0, _utils.deepMergeAt)(decoratedClass, 'graphql.enum', templateStrings.join(''));
   };
 };
 
@@ -404,11 +253,12 @@ var getMergedResolvers = exports.getMergedResolvers = function getMergedResolver
 };
 
 var toExcecutableMergedSchema = exports.toExcecutableMergedSchema = function toExcecutableMergedSchema(classesObjects) {
+  var typeDefs = toMergedSchemasString(classesObjects);
+  var resolvers = getMergedResolvers(classesObjects);
+
   return (0, _graphqlTools.makeExecutableSchema)({
-    typeDefs: toMergedSchemasString(classesObjects),
-    resolvers: _extends({}, getMergedResolvers(classesObjects), {
-      JSON: _graphqlTypeJson2.default
-    })
+    typeDefs: typeDefs,
+    resolvers: _extends({}, resolvers, { JSON: _graphqlTypeJson2.default })
   });
 };
 

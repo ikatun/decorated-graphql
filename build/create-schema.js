@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createSchemaFiles = createSchemaFiles;
+exports.default = createSchema;
 
 var _fs = require('fs');
 
@@ -35,7 +36,15 @@ var schemaPrefix = `schema {
   mutation: Mutation
 }`;
 
-exports.default = function (srcDir) {
+function createSchemaFiles(schemaDestPath, mergedSchema) {
+  _fs2.default.writeFileSync(_path2.default.join(schemaDestPath, 'graphql.graphql'), mergedSchema, 'utf8');
+
+  (0, _lib.generateSchemaJson)(mergedSchema).then(function (json) {
+    _fs2.default.writeFileSync(_path2.default.join(schemaDestPath, 'graphql.schema.json'), JSON.stringify(json, null, 2), 'utf8');
+  });
+}
+
+function createSchema(srcDir) {
   var schemaDestPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _path2.default.join(srcDir, '..');
 
   var requiredModules = glob.sync(_path2.default.join(srcDir, '**/*.graphql.js')).map(require);
@@ -53,11 +62,3 @@ exports.default = function (srcDir) {
 
   return executableMergedSchema;
 };
-
-function createSchemaFiles(schemaDestPath, mergedSchema) {
-  _fs2.default.writeFileSync(_path2.default.join(schemaDestPath, 'graphql.graphql'), mergedSchema, 'utf8');
-
-  (0, _lib.generateSchemaJson)(mergedSchema).then(function (json) {
-    _fs2.default.writeFileSync(_path2.default.join(schemaDestPath, 'graphql.schema.json'), JSON.stringify(json, null, 2), 'utf8');
-  });
-}
