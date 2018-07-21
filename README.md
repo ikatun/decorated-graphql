@@ -2,7 +2,91 @@
 A few node decorators for building GraphQL API.
 They allow you to use GraphQL schema as type declarations for your resolvers.
 
-# Requirements
+## Requirements
 Your project setup must support decorators and the code must be run without class names minimalization.
-Here is an example project already setup and ready to run: https://github.com/ikatun/graphql-project.
+
+## Installation
+```
+npm install decorated-graphql
+```
+
+## Example code snippet
+```JS
+import { type, query, subscription, mutation, publish, description, union, Enum, Interface } from 'decorated-graphql';
+
+const users = [{
+  id: 1,
+  username: 'user1',
+  meta: { birthday: '02-02-1990', name: 'Tom' },
+}, {
+  id: 2,
+  username: 'user2',
+  meta: { birthday: '10-11-2001', name: 'Matt' },
+}];
+
+export const messages = [{
+  id: 1,
+  senderId: 1,
+  recvId: 2,
+  content: 'blabla',
+}];
+
+@type`
+  id: ID
+  username: String
+  meta: JSON`
+export class User {
+  @query`: [User]`
+  users() {
+    return users;
+  }
+}
+
+@description`Represents a message sent from one user to another`
+@type`
+  id: ID
+  """ id of the sending user """ senderId: ID
+  """ id of receiving user """ recvId: ID
+  content: String
+  recver: User`
+export class Message {
+  @description`Used to create a single message`
+  @mutation`(senderId: ID, recvId: ID, content: String): Message`
+  createMessage(message) {
+    const newMessage = { ...message, id: (messages.length + 1).toString() };
+    messages.push(newMessage);
+
+    publish('onMessageCreated', newMessage);
+
+    return newMessage;
+  }
+
+  @query`: [Message]`
+  messages() {
+    return messages;
+  }
+
+  @subscription`(recvId: ID): Message`
+  onMessageCreated(newMessage, variables) {
+    return newMessage.recvId === variables.recvId;
+  }
+}
+
+@union`User | Message`
+export class Anything {
+  __resolveType(anything) {
+    if (anything.content) {
+      return 'Message';
+    }
+    return 'User';
+  }
+  @query`: [Anything]`
+  allData() {
+    return users.concat(messages);
+  }
+}
+```
+
+## Example project
+An example project already setup and ready to run: https://github.com/ikatun/graphql-project.
 It's using [nnode](https://github.com/ikatun/nnode) to run any JS code on any node version without transpilation.
