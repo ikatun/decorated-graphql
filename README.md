@@ -14,7 +14,7 @@ npm install decorated-graphql
 ```JS
 import { type, query, subscription, mutation, publish, description, union, Enum, Interface } from 'decorated-graphql';
 
-const users = [{
+export const users = [{
   id: 1,
   username: 'user1',
   meta: { birthday: '02-02-1990', name: 'Tom' },
@@ -31,6 +31,7 @@ export const messages = [{
   content: 'blabla',
 }];
 
+// User.graphql.js file
 @type`
   id: ID
   username: String
@@ -42,6 +43,7 @@ export class User {
   }
 }
 
+// Message.graphql.js file
 @description`Represents a message sent from one user to another`
 @type`
   id: ID
@@ -72,6 +74,7 @@ export class Message {
   }
 }
 
+// Anything.graphql.js file
 @union`User | Message`
 export class Anything {
   __resolveType(anything) {
@@ -85,6 +88,31 @@ export class Anything {
     return users.concat(messages);
   }
 }
+```
+## Example server code with subscriptions
+```
+import express from 'express';
+import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
+import bodyParser from 'body-parser';
+import createSchema from 'decorated-graphql/build/create-schema';
+import createSubscriptionServer from 'decorated-graphql/build/create-subscription-server'
+
+const app = express();
+
+const schema = createSchema(`${__dirname}/..`); // path to directory containing `.graphql.js` files with exported graphql decorated classes
+
+app.use('/graphql', bodyParser.json(), graphqlExpress({ schema }));
+app.use('/', graphiqlExpress({
+  endpointURL: '/graphql',
+  subscriptionsEndpoint: 'ws://localhost:3000/subscriptions'
+}));
+
+const ws = createSubscriptionServer(app, schema, '/subscriptions');
+
+ws.listen(3000, () => {
+  console.log('Go visit http://localhost:3000');
+});
+
 ```
 
 ## Example project
