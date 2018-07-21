@@ -36,7 +36,14 @@ const extractType = (decoratedClass) => graphQLMetadataToString(decoratedClass, 
 const extractInput = (decoratedClass) => graphQLMetadataToString(decoratedClass, 'input');
 const extractEnum = (decoratedClass) => graphQLMetadataToString(decoratedClass, 'enum');
 const extractInterface = (decoratedClass) => graphQLMetadataToString(decoratedClass, 'interface');
-const extractUnion = (decoratedClass) => graphQLMetadataToString(decoratedClass, 'union');
+const extractUnion = (decoratedClass) => {
+  const union = _.get(decoratedClass, 'graphql.union');
+  if (!union) {
+    return '';
+  }
+
+  return `union ${getName(decoratedClass)} = ${union}\n`;
+};
 
 const extractQueries = (decoratedClass) => integratedGraphQLTypeToString(decoratedClass, 'Query', 'queries');
 const extractMutations = (decoratedClass) => integratedGraphQLTypeToString(decoratedClass, 'Mutation', 'mutations');
@@ -123,101 +130,11 @@ const toExcecutableSchema = classInstance => makeExecutableSchema({
   resolvers: toResolvers(classInstance),
 });
 
-export const type = templateStrings => (decoratedClass) => {
-  decoratedClass.graphql = {
-    ...decoratedClass.graphql,
-    type: templateStrings.join(''),
-  };
-
-  Object.assign(decoratedClass.prototype, {
-    toExcecutableSchema() {
-      return toExcecutableSchema(this);
-    },
-    toSchemaString() {
-      return toSchemaString(decoratedClass);
-    },
-    getResolvers() {
-      return toResolvers(this);
-    },
-  });
-};
-
-export const input = templateStrings => (decoratedClass) => {
-  decoratedClass.graphql = {
-    ...decoratedClass.graphql,
-    input: templateStrings.join(''),
-  };
-
-  Object.assign(decoratedClass.prototype, {
-    toExcecutableSchema() {
-      return toExcecutableSchema(this);
-    },
-    toSchemaString() {
-      return toSchemaString(decoratedClass);
-    },
-    getResolvers() {
-      return toResolvers(this);
-    },
-  });
-};
-
-
-export const Interface = templateStrings => (decoratedClass) => {
-  decoratedClass.graphql = {
-    ...decoratedClass.graphql,
-    interface: templateStrings.join(''),
-  };
-
-  Object.assign(decoratedClass.prototype, {
-    toExcecutableSchema() {
-      return toExcecutableSchema(this);
-    },
-    toSchemaString() {
-      return toSchemaString(decoratedClass);
-    },
-    getResolvers() {
-      return toResolvers(this);
-    },
-  });
-};
-
-export const union = templateStrings => (decoratedClass) => {
-  decoratedClass.graphql = {
-    ...decoratedClass.graphql,
-    union: templateStrings.join(''),
-  };
-
-  Object.assign(decoratedClass.prototype, {
-    toExcecutableSchema() {
-      return toExcecutableSchema(this);
-    },
-    toSchemaString() {
-      return toSchemaString(decoratedClass);
-    },
-    getResolvers() {
-      return toResolvers(this);
-    },
-  });
-};
-
-export const Enum = templateStrings => (decoratedClass) => {
-  decoratedClass.graphql = {
-    ...decoratedClass.graphql,
-    enum: templateStrings.join(''),
-  };
-
-  Object.assign(decoratedClass.prototype, {
-    toExcecutableSchema() {
-      return toExcecutableSchema(this);
-    },
-    toSchemaString() {
-      return toSchemaString(decoratedClass);
-    },
-    getResolvers() {
-      return toResolvers(this);
-    },
-  });
-};
+export const type = templateStrings => (decoratedClass) => deepMergeAt(decoratedClass, 'graphql.type', templateStrings.join(''));
+export const input = templateStrings => (decoratedClass) => deepMergeAt(decoratedClass, 'graphql.input', templateStrings.join(''));
+export const Interface = templateStrings => (decoratedClass) => deepMergeAt(decoratedClass, 'graphql.interface', templateStrings.join(''));
+export const union = templateStrings => (decoratedClass) => deepMergeAt(decoratedClass, 'graphql.union', templateStrings.join(''));
+export const Enum = templateStrings => (decoratedClass) => deepMergeAt(decoratedClass, 'graphql.enum', templateStrings.join(''));
 
 const jsonSchemaString = `
   scalar JSON
@@ -231,12 +148,12 @@ export const getMergedResolvers = classesObjects =>
 
 
 export const toExcecutableMergedSchema = (classesObjects) => {
+  const typeDefs = toMergedSchemasString(classesObjects);
+  const resolvers = getMergedResolvers(classesObjects);
+
   return makeExecutableSchema({
-    typeDefs: toMergedSchemasString(classesObjects),
-    resolvers: {
-      ...getMergedResolvers(classesObjects),
-      JSON: GraphQLJSON,
-    },
+    typeDefs: typeDefs,
+    resolvers: { ...resolvers, JSON: GraphQLJSON },
   });
 };
 

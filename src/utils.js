@@ -1,7 +1,7 @@
-import { mergeWith, set, isEmpty, get } from 'lodash';
+import { mergeWith, set, isEmpty, get, isArray } from 'lodash';
 
 function customizer(objValue, srcValue) {
-  if (_.isArray(objValue)) {
+  if (isArray(objValue)) {
     return objValue.concat(srcValue);
   }
 }
@@ -14,7 +14,7 @@ export function deepMergeAt(object: Object, key: string, source: Object) {
   deepMerge(object, deepSource);
 }
 
-export const getName = decoratedClass => _.get(decoratedClass, 'graphql.name', decoratedClass.name);
+export const getName = decoratedClass => get(decoratedClass, 'graphql.name', decoratedClass.name);
 
 export function graphQLMetadataToString(decoratedClass, metadataName) {
   const className = getName(decoratedClass);
@@ -23,7 +23,7 @@ export function graphQLMetadataToString(decoratedClass, metadataName) {
     return '';
   }
 
-  return `input ${className} { ${body}\n}\n`;
+  return `${metadataName} ${className} { ${body}\n}\n`;
 }
 
 export function integratedGraphQLTypeToString(decoratedClass, typeName: string, pluralName: string) {

@@ -16,20 +16,6 @@ const schemaPrefix = `schema {
   mutation: Mutation
 }`;
 
-export default (srcDir, schemaDestPath = path.join(srcDir, '..')) => {
-  const requiredModules = glob.sync(path.join(srcDir, '**/*.graphql.js')).map(require);
-  const all = _.flatten(requiredModules.map(_.values)).filter(({ graphql }) => graphql);
-  const executableMergedSchema = toExcecutableMergedSchema(all);
-
-  const mergedSchema = toMergedSchemasString(all).replace(schemaPrefix, '');
-
-  if (schemaDestPath) {
-    createSchemaFiles(schemaDestPath, mergedSchema);
-  }
-
-  return executableMergedSchema;
-};
-
 export function createSchemaFiles(schemaDestPath, mergedSchema) {
   fs.writeFileSync(
     path.join(schemaDestPath, 'graphql.graphql'),
@@ -45,3 +31,17 @@ export function createSchemaFiles(schemaDestPath, mergedSchema) {
     );
   });
 }
+
+export default function createSchema(srcDir, schemaDestPath = path.join(srcDir, '..')) {
+  const requiredModules = glob.sync(path.join(srcDir, '**/*.graphql.js')).map(require);
+  const all = _.flatten(requiredModules.map(_.values)).filter(({ graphql }) => graphql);
+  const executableMergedSchema = toExcecutableMergedSchema(all);
+
+  const mergedSchema = toMergedSchemasString(all).replace(schemaPrefix, '');
+
+  if (schemaDestPath) {
+    createSchemaFiles(schemaDestPath, mergedSchema);
+  }
+
+  return executableMergedSchema;
+};
