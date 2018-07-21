@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.toExcecutableMergedSchema = exports.getMergedResolvers = exports.toMergedSchemasString = exports.Enum = exports.union = exports.Interface = exports.input = exports.type = exports.subscription = exports.query = exports.mutation = exports.publish = undefined;
+exports.toExcecutableMergedSchema = exports.getMergedResolvers = exports.toMergedSchemasString = exports.Enum = exports.union = exports.Interface = exports.input = exports.type = exports.subscription = exports.query = exports.mutation = exports.description = exports.publish = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -36,6 +36,18 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var pubsub = new _graphqlSubscriptions.PubSub();
 var publish = exports.publish = function publish(subscriptionName, msg) {
   return pubsub.publish(subscriptionName, { [subscriptionName]: msg });
+};
+
+var description = exports.description = function description(templateStrings) {
+  return function (target, name) {
+    var descriptionQL = `"""${templateStrings.join('')}"""\n`;
+
+    if (name) {
+      _lodash2.default.set(target.constructor, ['graphql', 'descriptions', name], descriptionQL);
+    } else {
+      _lodash2.default.set(target, 'graphql.description', descriptionQL);
+    }
+  };
 };
 
 var mutation = exports.mutation = function mutation(templateStrings) {

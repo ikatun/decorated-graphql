@@ -37,7 +37,9 @@ function graphQLMetadataToString(decoratedClass, metadataName) {
     return '';
   }
 
-  return `${metadataName} ${className} { ${body}\n}\n`;
+  var descriptionQL = (0, _lodash.get)(decoratedClass, 'graphql.description', '');
+
+  return `${descriptionQL}${metadataName} ${className} { ${body}\n}\n`;
 }
 
 function integratedGraphQLTypeToString(decoratedClass, typeName, pluralName) {
@@ -49,7 +51,11 @@ function integratedGraphQLTypeToString(decoratedClass, typeName, pluralName) {
   var body = items.map(function (_ref) {
     var name = _ref.name,
         args = _ref.args;
-    return `  ${name} ${args}`;
+
+    var description = (0, _lodash.get)(decoratedClass, ['graphql', 'descriptions', name], '');
+    return `${description}${name} ${args}`;
   }).join('\n');
-  return `type ${typeName} {\n${body}\n}\n`;
+
+  var descriptionQL = (0, _lodash.get)(decoratedClass, 'graphql.description', '');
+  return `${descriptionQL}type ${typeName} {\n${body}\n}\n`;
 }

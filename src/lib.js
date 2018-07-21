@@ -11,6 +11,16 @@ import { deepMergeAt, getName, graphQLMetadataToString, integratedGraphQLTypeToS
 const pubsub = new PubSub();
 export const publish = (subscriptionName, msg) => pubsub.publish(subscriptionName, { [subscriptionName]: msg });
 
+export const description = templateStrings => (target, name) => {
+  const descriptionQL = `"""${templateStrings.join('')}"""\n`;
+
+  if (name) {
+    _.set(target.constructor, ['graphql', 'descriptions', name], descriptionQL);
+  } else {
+    _.set(target, 'graphql.description', descriptionQL);
+  }
+}
+
 export const mutation = templateStrings => ({ constructor: decoratedClass }, methodName) => {
   deepMergeAt(decoratedClass, 'graphql.mutations', [{
     name: methodName,

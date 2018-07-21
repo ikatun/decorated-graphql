@@ -23,7 +23,9 @@ export function graphQLMetadataToString(decoratedClass, metadataName) {
     return '';
   }
 
-  return `${metadataName} ${className} { ${body}\n}\n`;
+  const descriptionQL = get(decoratedClass, 'graphql.description', '');
+
+  return `${descriptionQL}${metadataName} ${className} { ${body}\n}\n`;
 }
 
 export function integratedGraphQLTypeToString(decoratedClass, typeName: string, pluralName: string) {
@@ -32,6 +34,11 @@ export function integratedGraphQLTypeToString(decoratedClass, typeName: string, 
     return '';
   }
 
-  const body = items.map(({ name, args }) => `  ${name} ${args}`).join('\n');
-  return `type ${typeName} {\n${body}\n}\n`;
+  const body = items.map(({ name, args }) => {
+    const description = get(decoratedClass, ['graphql', 'descriptions', name], '');
+    return `${description}${name} ${args}`;
+  }).join('\n');
+
+  const descriptionQL = get(decoratedClass, 'graphql.description', '');
+  return `${descriptionQL}type ${typeName} {\n${body}\n}\n`;
 }
