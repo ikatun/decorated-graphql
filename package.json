@@ -23,7 +23,7 @@
     "subscriptions-transport-ws": "^0.9.6"
   },
   "devDependencies": {
-    "nnode": "0.0.6"
+    "nnode": "0.1.0"
   },
   "peerDependencies": {
     "glob": "*"
