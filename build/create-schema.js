@@ -47,9 +47,13 @@ function createSchemaFiles(schemaDestPath, mergedSchema) {
 function createSchema(srcDir) {
   var schemaDestPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _path2.default.join(srcDir, '..');
 
-  var requiredModules = glob.sync(_path2.default.join(srcDir, '**/*.graphql.js')).map(require);
-  var all = _lodash2.default.flatten(requiredModules.map(_lodash2.default.values)).filter(function (_ref) {
-    var graphql = _ref.graphql;
+  var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+      _ref$resolversNamePat = _ref.resolversNamePattern,
+      resolversNamePattern = _ref$resolversNamePat === undefined ? '**/*.graphql.js' : _ref$resolversNamePat;
+
+  var requiredModules = glob.sync(_path2.default.join(srcDir, resolversNamePattern)).map(require);
+  var all = _lodash2.default.flatten(requiredModules.map(_lodash2.default.values)).filter(function (_ref2) {
+    var graphql = _ref2.graphql;
     return graphql;
   });
   var executableMergedSchema = (0, _lib.toExcecutableMergedSchema)(all);

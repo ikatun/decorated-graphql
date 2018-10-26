@@ -32,8 +32,8 @@ export function createSchemaFiles(schemaDestPath, mergedSchema) {
   });
 }
 
-export default function createSchema(srcDir, schemaDestPath = path.join(srcDir, '..')) {
-  const requiredModules = glob.sync(path.join(srcDir, '**/*.graphql.js')).map(require);
+export default function createSchema(srcDir, schemaDestPath = path.join(srcDir, '..'), { resolversNamePattern = '**/*.graphql.js' } = {}) {
+  const requiredModules = glob.sync(path.join(srcDir, resolversNamePattern)).map(require);
   const all = _.flatten(requiredModules.map(_.values)).filter(({ graphql }) => graphql);
   const executableMergedSchema = toExcecutableMergedSchema(all);
 
