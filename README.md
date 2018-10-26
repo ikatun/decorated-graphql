@@ -104,7 +104,7 @@ import createSubscriptionServer from 'decorated-graphql/build/create-subscriptio
 const app = express();
 
 // path to directory containing `.graphql.js` files with exported graphql decorated classes
-const projectRoot = `${__dirname}/..`;
+const projectRoot = `${__dirname}`;
 const schema = createSchema(projectRoot); 
 
 app.use('/graphql', bodyParser.json(), graphqlExpress({ schema }));
